@@ -1,0 +1,901 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1684ca">
+  <title>Polaris Alliance — Home of the North Star</title>
+
+  <style>
+    :root {
+      --blue-dark: #0c5d98;
+      --white: #fff;
+      --muted: rgba(255,255,255,.78);
+      --faint: rgba(255,255,255,.62);
+      --line: rgba(255,255,255,.25);
+      --panel: rgba(5,58,103,.32);
+      --gutter: clamp(20px,4vw,58px);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      color: var(--white);
+      background:
+        radial-gradient(ellipse at 82% 0%, rgba(116,213,255,.42), transparent 40%),
+        linear-gradient(140deg,#1478bf,#269fe2 55%,#126eaf);
+    }
+
+    body.intro-active { overflow: hidden; }
+
+    a { color: inherit; }
+    button, input { font: inherit; }
+
+    /* Animated opening scene */
+    .intro {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% 45%, rgba(128,220,255,.35), transparent 32%),
+        linear-gradient(140deg,#1478bf,#269fe2 55%,#126eaf);
+      transition: opacity .65s ease, visibility .65s ease;
+    }
+
+    .intro.is-hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .intro-content {
+      width: min(92vw, 900px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(14px,3vw,34px);
+      animation: intro-arrive 1s cubic-bezier(.16,1,.3,1) both;
+    }
+
+    .intro-star {
+      width: clamp(66px,12vw,132px);
+      flex: 0 0 auto;
+      filter: drop-shadow(0 0 24px rgba(255,255,255,.55));
+      animation: star-arrive 1.4s cubic-bezier(.16,1,.3,1) both,
+                 star-glow 2s 1.4s ease-in-out infinite alternate;
+    }
+
+    .intro-wordmark {
+      overflow: hidden;
+      color: #fff;
+      font-size: clamp(27px,7vw,76px);
+      font-weight: 300;
+      letter-spacing: -.055em;
+      line-height: 1;
+      text-transform: uppercase;
+      white-space: nowrap;
+      clip-path: inset(0 100% 0 0);
+      animation: reveal-wordmark 1.15s .45s cubic-bezier(.7,0,.2,1) forwards;
+    }
+
+    .intro-tagline {
+      position: absolute;
+      top: calc(50% + clamp(58px,9vw,100px));
+      margin: 0;
+      color: rgba(255,255,255,.82);
+      font-size: 11px;
+      letter-spacing: .27em;
+      text-align: center;
+      text-transform: uppercase;
+      opacity: 0;
+      animation: fade-up .7s 1.2s ease forwards;
+    }
+
+    .intro-progress {
+      width: min(250px,60vw);
+      height: 2px;
+      position: absolute;
+      top: calc(50% + clamp(94px,13vw,138px));
+      overflow: hidden;
+      background: rgba(255,255,255,.24);
+    }
+
+    .intro-progress::after {
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: #fff;
+      content: "";
+      transform: scaleX(0);
+      transform-origin: left;
+      animation: progress 2.3s .15s ease-in-out forwards;
+    }
+
+    .intro-skip {
+      position: absolute;
+      right: var(--gutter);
+      bottom: 28px;
+      padding: 11px 15px;
+      border: 1px solid rgba(255,255,255,.55);
+      color: #fff;
+      background: rgba(0,0,0,.08);
+      cursor: pointer;
+      font-size: 10px;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+    }
+
+    .intro-skip:hover { background: rgba(255,255,255,.13); }
+    .intro-skip:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
+
+    @keyframes intro-arrive {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes star-arrive {
+      from { opacity: 0; transform: scale(.35) rotate(-120deg); }
+      to { opacity: 1; transform: scale(1) rotate(0); }
+    }
+
+    @keyframes star-glow {
+      from { filter: drop-shadow(0 0 12px rgba(255,255,255,.3)); }
+      to { filter: drop-shadow(0 0 28px rgba(255,255,255,.75)); }
+    }
+
+    @keyframes reveal-wordmark {
+      to { clip-path: inset(0 0 0 0); }
+    }
+
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes progress {
+      to { transform: scaleX(1); }
+    }
+
+    /* Header and navigation */
+    .topbar {
+      min-height: 48px;
+      padding: 0 var(--gutter);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    .top-links { height: 48px; display: flex; gap: 26px; }
+    .top-links a { display: inline-flex; align-items: center; text-decoration: none; }
+    .top-links a:hover, .nav-links a:hover { color: var(--white); }
+    .top-note { text-align: right; }
+
+    .navbar {
+      min-height: 84px;
+      padding: 12px var(--gutter);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 28px;
+      border-bottom: 1px solid rgba(255,255,255,.15);
+      position: relative;
+    }
+
+    .brand {
+      display: inline-flex;
+      flex: 0 0 auto;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .brand-icon { width: 43px; height: 43px; }
+
+    .brand-name {
+      font-size: 17px;
+      font-weight: 300;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .nav-content {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: clamp(14px,2vw,28px);
+    }
+
+    .nav-links { display: flex; gap: clamp(14px,2vw,28px); }
+
+    .nav-links a, .nav-button {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .13em;
+      text-decoration: none;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .online {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 13px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .online:hover { border-color: #fff; color: #fff; }
+
+    .online-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #63f0b2;
+    }
+
+    .nav-button {
+      padding: 13px 17px;
+      border: 1px solid rgba(255,255,255,.7);
+      color: var(--white);
+    }
+
+    .nav-button:hover, .secondary-button:hover {
+      background: rgba(255,255,255,.12);
+    }
+
+    .menu-toggle {
+      display: none;
+      width: 42px;
+      height: 42px;
+      padding: 9px;
+      border: 1px solid var(--line);
+      color: #fff;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .menu-toggle span {
+      height: 2px;
+      display: block;
+      margin: 5px 0;
+      background: currentColor;
+    }
+
+    main { padding: 0 var(--gutter); }
+    section { scroll-margin-top: 24px; }
+
+    /* Main page */
+    .hero {
+      min-height: 550px;
+      padding: clamp(80px,12vw,145px) 0;
+      position: relative;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .hero::after {
+      width: min(45vw,520px);
+      aspect-ratio: 1;
+      position: absolute;
+      top: 50%;
+      right: -2%;
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 50%;
+      content: "";
+      transform: translateY(-50%);
+      box-shadow: 0 0 0 65px rgba(255,255,255,.035),
+                  0 0 0 130px rgba(255,255,255,.025);
+      pointer-events: none;
+    }
+
+    .hero-content { max-width: 930px; position: relative; z-index: 1; }
+
+    .eyebrow, .section-label {
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .19em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3 { margin-top: 0; }
+
+    h1, .section-title, .airline-card h3, .member-card h3 {
+      font-family: Impact, "Arial Narrow", sans-serif;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      max-width: 850px;
+      margin-bottom: 0;
+      font-size: clamp(68px,12vw,150px);
+      letter-spacing: -.035em;
+      line-height: .87;
+    }
+
+    .hero-tagline {
+      margin: 24px 0 0;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: .19em;
+      text-transform: uppercase;
+    }
+
+    .hero-copy {
+      max-width: 680px;
+      margin: 22px 0 0;
+      color: var(--muted);
+      font-size: clamp(17px,2vw,23px);
+      line-height: 1.65;
+    }
+
+    .section {
+      padding: clamp(65px,8vw,105px) 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section-title { margin: 0; font-size: clamp(42px,6vw,72px); line-height: .95; }
+
+    .section-intro {
+      max-width: 790px;
+      margin: 18px 0 32px;
+      color: var(--muted);
+      font-size: clamp(16px,1.7vw,21px);
+      line-height: 1.75;
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: minmax(0,1.2fr) minmax(240px,.8fr);
+      gap: clamp(35px,8vw,120px);
+      align-items: start;
+    }
+
+    .about-copy {
+      color: var(--muted);
+      font-size: clamp(16px,1.65vw,21px);
+      line-height: 1.8;
+    }
+
+    .facts { padding: 26px; border: 1px solid var(--line); background: var(--panel); }
+    .fact { padding: 16px 0; border-bottom: 1px solid var(--line); }
+    .fact:first-child { padding-top: 0; }
+    .fact:last-child { padding-bottom: 0; border: 0; }
+
+    .fact-label, .airline-code, .member-role {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--faint);
+      font-size: 10px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    .fact-value { font-size: 18px; }
+
+    .directory-tools {
+      margin: 28px 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .directory-count {
+      margin: 0;
+      color: var(--faint);
+      font-size: 11px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    .search {
+      width: min(100%,300px);
+      min-height: 44px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      outline: none;
+      color: #fff;
+      background: rgba(0,0,0,.12);
+    }
+
+    .search::placeholder { color: rgba(255,255,255,.7); }
+    .search:focus { border-color: #fff; }
+
+    .airline-grid, .member-grid {
+      display: grid;
+      grid-template-columns: repeat(3,minmax(0,1fr));
+      gap: 14px;
+    }
+
+    .airline-card, .member-card {
+      min-height: 185px;
+      padding: 23px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      transition: transform .18s ease, background .18s ease, border-color .18s ease;
+    }
+
+    .airline-card:hover, .member-card:hover {
+      transform: translateY(-3px);
+      background: rgba(4,57,102,.45);
+    }
+
+    .airline-card.leader-card {
+      border-color: rgba(255,255,255,.8);
+      background: rgba(4,57,102,.56);
+    }
+
+    .leader-card .airline-code { color: #fff; }
+
+    .airline-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .airline-code { margin: 0; }
+
+    .airline-mark {
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255,255,255,.55);
+      border-radius: 50%;
+      font-size: 13px;
+    }
+
+    .airline-card h3, .member-card h3 {
+      margin: 21px 0 8px;
+      font-size: 30px;
+      line-height: 1;
+      overflow-wrap: anywhere;
+    }
+
+    .airline-card p, .member-card p {
+      margin-bottom: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .empty-state { display: none; margin: 20px 0 0; color: var(--muted); }
+    .member-card { min-height: 170px; }
+    .member-card h3 { margin-top: 14px; }
+
+    .join {
+      padding: clamp(65px,8vw,105px) 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 35px;
+    }
+
+    .join-copy {
+      max-width: 600px;
+      margin: 17px 0 0;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.7;
+    }
+
+    .join-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+    .join-button, .secondary-button {
+      min-height: 48px;
+      padding: 0 19px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-decoration: none;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .join-button { color: var(--blue-dark); background: #fff; }
+    .secondary-button { color: #fff; background: transparent; }
+
+    footer {
+      min-height: 86px;
+      padding: 20px var(--gutter);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      border-top: 1px solid var(--line);
+      color: var(--faint);
+      font-size: 10px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    footer p { margin: 0; }
+
+    @media (max-width: 1000px) {
+      .online { display: none; }
+      .airline-grid, .member-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+    }
+
+    @media (max-width: 760px) {
+      .navbar { min-height: 72px; }
+      .menu-toggle { display: block; }
+
+      .nav-content {
+        display: none;
+        position: absolute;
+        z-index: 5;
+        top: 100%;
+        left: 0;
+        right: 0;
+        padding: 20px var(--gutter);
+        align-items: stretch;
+        flex-direction: column;
+        background: #1478bf;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .nav-content.open { display: flex; }
+      .nav-links { align-items: stretch; flex-direction: column; gap: 0; }
+      .nav-links a { padding: 13px 0; border-bottom: 1px solid var(--line); }
+      .nav-button { text-align: center; }
+      .hero { min-height: 500px; }
+      .hero::after { right: -45%; }
+      .about-grid { grid-template-columns: 1fr; gap: 28px; }
+      .join { align-items: flex-start; flex-direction: column; }
+    }
+
+    @media (max-width: 540px) {
+      .topbar { font-size: 9px; }
+      .top-links { gap: 16px; }
+      .top-note { max-width: 135px; }
+      .brand-name { font-size: 13px; }
+      .brand-icon { width: 37px; height: 37px; }
+      .airline-grid, .member-grid { grid-template-columns: 1fr; }
+      .directory-tools { align-items: stretch; flex-direction: column; }
+      .search { width: 100%; }
+      footer { align-items: flex-start; flex-direction: column; }
+      .intro-content { flex-direction: column; gap: 14px; }
+      .intro-wordmark { font-size: clamp(28px,9vw,52px); }
+      .intro-tagline { top: calc(50% + 96px); }
+      .intro-progress { top: calc(50% + 132px); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body class="intro-active" id="top">
+  <div class="intro" id="intro" aria-label="Polaris Alliance introduction">
+    <div class="intro-content">
+      <svg class="intro-star" viewBox="0 0 100 100" aria-hidden="true">
+        <path fill="white" d="M50 0 59 38 92 14 67 43 100 50 62 59 86 92 57 67 50 100 41 62 8 86 33 57 0 50 38 41 14 8 43 33Z"/>
+        <circle cx="50" cy="50" r="7" fill="#1684ca"/>
+      </svg>
+      <div class="intro-wordmark">Polaris Alliance</div>
+    </div>
+    <p class="intro-tagline">Home of the North Star</p>
+    <div class="intro-progress" aria-hidden="true"></div>
+    <button class="intro-skip" id="skipIntro" type="button">Skip intro</button>
+  </div>
+
+  <div class="topbar">
+    <div class="top-links">
+      <a href="#airlines">Travellers</a>
+      <a href="#members">Members</a>
+    </div>
+    <div class="top-note">Polaris Alliance · Home of the North Star</div>
+  </div>
+
+  <header class="navbar">
+    <a class="brand" href="#top" aria-label="Polaris Alliance home">
+      <svg class="brand-icon" viewBox="0 0 100 100" aria-hidden="true">
+        <path fill="currentColor" d="M50 0 59 38 92 14 67 43 100 50 62 59 86 92 57 67 50 100 41 62 8 86 33 57 0 50 38 41 14 8 43 33Z"/>
+        <circle cx="50" cy="50" r="7" fill="#1684ca"/>
+      </svg>
+      <span class="brand-name">Polaris Alliance</span>
+    </a>
+
+    <button class="menu-toggle" id="menuToggle" type="button"
+      aria-label="Toggle navigation" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+
+    <nav class="nav-content" id="navContent" aria-label="Main navigation">
+      <div class="nav-links">
+        <a href="#about">About</a>
+        <a href="#airlines">Airlines</a>
+        <a href="#members">Members</a>
+        <a href="#join">Join</a>
+      </div>
+      <a class="online" href="https://discord.gg/Yr6a2MGhfA" target="_blank" rel="noopener noreferrer">
+        <span class="online-dot"></span>
+        <span>Join our Discord</span>
+      </a>
+      <a class="nav-button" href="https://discord.gg/Yr6a2MGhfA" target="_blank" rel="noopener noreferrer">
+        Join the alliance
+      </a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero" id="about">
+      <div class="hero-content">
+        <p class="eyebrow">Polaris Alliance · About us</p>
+        <h1>Home of the<br>North Star</h1>
+        <p class="hero-tagline">One alliance. Many journeys.</p>
+        <p class="hero-copy">
+          A community for travellers, airlines, and members united by a shared
+          direction. Find your people, discover our network, and journey farther
+          together.
+        </p>
+      </div>
+    </section>
+
+    <section class="section" id="story">
+      <p class="section-label">Our purpose</p>
+      <h2 class="section-title">A shared direction</h2>
+
+      <div class="about-grid">
+        <div class="about-copy">
+          <p>
+            Polaris Alliance brings together independent airlines and a
+            community of members. Each airline has its own identity, while
+            sharing a common commitment to collaboration and connection.
+          </p>
+          <p>
+            Like the North Star, Polaris is a guiding point for the journeys
+            we take together. Whether you are a traveller, airline, or member,
+            there is a place for you in the alliance.
+          </p>
+        </div>
+
+        <aside class="facts" aria-label="About Polaris Alliance">
+          <div class="fact">
+            <span class="fact-label">Our name</span>
+            <span class="fact-value">Polaris Alliance</span>
+          </div>
+          <div class="fact">
+            <span class="fact-label">Our motto</span>
+            <span class="fact-value">Home of the North Star</span>
+          </div>
+          <div class="fact">
+            <span class="fact-label">Our network</span>
+            <span class="fact-value"><span id="airlineTotal">32</span> alliance airlines</span>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section" id="airlines">
+      <p class="section-label">The network</p>
+      <h2 class="section-title">Our airlines</h2>
+      <p class="section-intro">
+        Explore all airlines in the Polaris Alliance. Redwood Airlines is
+        identified as the alliance leader.
+      </p>
+
+      <div class="directory-tools">
+        <p class="directory-count">
+          <span id="directoryTotal">32</span> airlines · Redwood Airlines leads the alliance
+        </p>
+        <input class="search" id="airlineSearch" type="search"
+          placeholder="Search airlines..." aria-label="Search airlines">
+      </div>
+
+      <div class="airline-grid" id="airlineGrid"></div>
+      <p class="empty-state" id="emptyAirlines">No airlines match that search.</p>
+    </section>
+
+    <section class="section" id="members">
+      <p class="section-label">The people behind the alliance</p>
+      <h2 class="section-title">Our members</h2>
+      <p class="section-intro">
+        Polaris Alliance is built by its members. Add approved member profiles,
+        leadership roles, and contact details here.
+      </p>
+
+      <div class="member-grid">
+        <article class="member-card">
+          <span class="member-role">Alliance leadership</span>
+          <h3>Alliance team</h3>
+          <p>Guiding the alliance and its shared direction.</p>
+        </article>
+        <article class="member-card">
+          <span class="member-role">Airline network</span>
+          <h3>Our airlines</h3>
+          <p>Independent airlines, connected through Polaris.</p>
+        </article>
+        <article class="member-card">
+          <span class="member-role">Community</span>
+          <h3>Our members</h3>
+          <p>Travellers and members making the alliance stronger.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="join" id="join">
+      <div>
+        <p class="section-label">Your journey starts here</p>
+        <h2 class="section-title">Find your north.</h2>
+        <p class="join-copy">
+          Interested in joining Polaris Alliance? Join the Discord community
+          and connect with the team.
+        </p>
+      </div>
+      <div class="join-actions">
+        <a class="join-button" href="https://discord.gg/Yr6a2MGhfA"
+          target="_blank" rel="noopener noreferrer">Join on Discord</a>
+        <a class="secondary-button" href="#airlines">Explore airlines</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>© <span id="year"></span> Polaris Alliance</p>
+    <p>Home of the North Star</p>
+    <a href="#top">Back to top ↑</a>
+  </footer>
+
+  <script>
+    const airlines = [
+      "Redwood Airlines",
+      "Air Italia",
+      "Al-Halal",
+      "Arabi Air",
+      "Arriva",
+      "Asahi Airlines",
+      "CANNECT",
+      "Circuit Airlines",
+      "Circuit Ísland",
+      "Crux australia",
+      "DEEROO",
+      "Fabis",
+      "fcb air",
+      "Hikari Airlines",
+      "ICE Air Express",
+      "Kyūbi",
+      "Mediair",
+      "Northstar Airlines",
+      "NorWings",
+      "OSHIKO",
+      "Philippine Airline",
+      "Philippine Connect",
+      "Polarsirkelen Luft",
+      "Russiair",
+      "SaQr Airlines",
+      "SpéirAir",
+      "Star Air",
+      "StopOver",
+      "SunCoast Airways",
+      "Visdéerø",
+      "Volga Air",
+      "yanito932"
+    ];
+
+    const intro = document.querySelector("#intro");
+    const skipIntro = document.querySelector("#skipIntro");
+
+    function closeIntro() {
+      if (!intro || intro.classList.contains("is-hidden")) return;
+      intro.classList.add("is-hidden");
+      document.body.classList.remove("intro-active");
+    }
+
+    skipIntro.addEventListener("click", closeIntro);
+
+    // Keep the intro brief and automatically reveal the site.
+    const introTimer = window.setTimeout(closeIntro, 3200);
+
+    // Reduced-motion users skip the animated intro.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      window.clearTimeout(introTimer);
+      closeIntro();
+    }
+
+    const airlineGrid = document.querySelector("#airlineGrid");
+    const airlineSearch = document.querySelector("#airlineSearch");
+    const emptyAirlines = document.querySelector("#emptyAirlines");
+
+    function renderAirlines(searchText = "") {
+      const query = searchText.trim().toLocaleLowerCase();
+      const matches = airlines.filter((name) =>
+        name.toLocaleLowerCase().includes(query)
+      );
+
+      airlineGrid.replaceChildren();
+
+      matches.forEach((name) => {
+        const isLeader = name === "Redwood Airlines";
+        const card = document.createElement("article");
+        card.className = isLeader ? "airline-card leader-card" : "airline-card";
+
+        const top = document.createElement("div");
+        top.className = "airline-top";
+
+        const label = document.createElement("span");
+        label.className = "airline-code";
+        label.textContent = isLeader ? "Alliance leader" : "Alliance airline";
+
+        const mark = document.createElement("span");
+        mark.className = "airline-mark";
+        mark.setAttribute("aria-hidden", "true");
+        mark.textContent = "✦";
+
+        const heading = document.createElement("h3");
+        heading.textContent = name;
+
+        const description = document.createElement("p");
+        description.textContent = isLeader
+          ? "Leader of the Polaris Alliance."
+          : "Member airline of the Polaris Alliance.";
+
+        top.append(label, mark);
+        card.append(top, heading, description);
+        airlineGrid.append(card);
+      });
+
+      emptyAirlines.style.display = matches.length ? "none" : "block";
+    }
+
+    airlineSearch.addEventListener("input", (event) => {
+      renderAirlines(event.target.value);
+    });
+
+    const menuToggle = document.querySelector("#menuToggle");
+    const navContent = document.querySelector("#navContent");
+
+    menuToggle.addEventListener("click", () => {
+      const open = navContent.classList.toggle("open");
+      menuToggle.setAttribute("aria-expanded", String(open));
+    });
+
+    navContent.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", () => {
+        navContent.classList.remove("open");
+        menuToggle.setAttribute("aria-expanded", "false");
+      });
+    });
+
+    document.querySelector("#airlineTotal").textContent = airlines.length;
+    document.querySelector("#directoryTotal").textContent = airlines.length;
+    document.querySelector("#year").textContent = new Date().getFullYear();
+
+    renderAirlines();
+  </script>
+</body>
+</html>
